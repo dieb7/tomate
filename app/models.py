@@ -3,6 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 from app import app
 from time import time
+from datetime import datetime
 
 
 class User(db.Model):
@@ -10,6 +11,7 @@ class User(db.Model):
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(128))
+    tasks = db.relationship('Task', backref='author', lazy='dynamic')
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
@@ -33,3 +35,15 @@ class User(db.Model):
         except:
             return
         return User.query.get(id)
+
+
+class Task(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.String(140))
+    created = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    started = db.Column(db.DateTime, index=True)
+    done = db.Column(db.DateTime, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    def __repr__(self):
+        return '<Post {}>'.format(self.body)
