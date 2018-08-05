@@ -1,6 +1,7 @@
 from app.api import bp
 from flask import jsonify
 from app.models import User
+from app.models import Task
 from flask import request
 from app import db
 from flask import url_for
@@ -8,7 +9,11 @@ from flask import url_for
 
 @bp.route('/users', methods=['GET'])
 def get_users():
-    pass
+    users = User.query.all()
+    data = {
+        'items': [item.id for item in users]
+    }
+    return jsonify(data)
 
 
 @bp.route('/users', methods=['POST'])
@@ -56,20 +61,51 @@ def update_user(id):
 
 
 @bp.route('/users/<int:id>/tasks', methods=['GET'])
-def get_user_tasks():
-    pass
+def get_user_tasks(id):
+    user = User.query.get_or_404(id)
+    tasks = user.tasks.all()
+    data = {
+        'items': [item.id for item in tasks]
+    }
+    return jsonify(data)
 
 
 @bp.route('/users/<int:id>/tasks', methods=['POST'])
-def create_user_task():
-    pass
+def create_user_task(id):
+    # TODO: add some user authentication
+    user = User.query.get_or_404(id)
+    data = request.get_json() or {}
+    # TODO: add some authentication here
+    if 'content' not in data:
+        # TODO: return api friendly bad request here
+        # must include content field
+        pass
+    task = Task()
+    task.from_dict(data)
+    user.tasks.append(task)
+    db.session.commit()
+    response = jsonify(task.to_dict())
+    response.status_code = 201
+    response.headers['Location'] = url_for('api.get_user', id=user.id)
+    return response
 
 
 @bp.route('/users/<int:id>/tasks/<int:tid>', methods=['GET'])
 def get_user_task(id, tid):
-    pass
+    # TODO: add some user authentication
+    return jsonify(Task.query.get_or_404(tid).to_dict())
 
 
-@bp.route('/users/<int:id>/tasks/<int:tid>', methods=['GET'])
+@bp.route('/users/<int:id>/tasks/<int:tid>', methods=['PUT'])
 def update_user_task(id, tid):
-    pass
+    # TODO: add some user authentication
+    task = Task.query.get_or_404(tid)
+    data = request.get_json() or {}
+    # TODO: add some authentication here
+    if 'content' not in data:
+        # TODO: return api friendly bad request here
+        # must include content field
+        pass
+    task.from_dict(data)
+    db.session.commit()
+    return jsonify(task.to_dict())

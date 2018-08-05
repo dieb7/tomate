@@ -33,7 +33,6 @@ class User(db.Model):
         return data
 
     def from_dict(self, data):
-        print(data)
         for field in ['username', 'email']:
             if field in data:
                 setattr(self, field, data[field])
@@ -70,4 +69,20 @@ class Task(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     def __repr__(self):
-        return '<Post {}>'.format(self.body)
+        return '<Post {}>'.format(self.content)
+
+    def to_dict(self):
+        data = {
+            'id': self.id,
+            'content': self.content,
+            'created': self.created,
+            'started': self.started,
+            'done': self.done,
+            'user_id': self.user_id
+        }
+        return data
+
+    def from_dict(self, data):
+        for field in ['content', 'started', 'done']:
+            if field in data:
+                setattr(self, field, data[field])
